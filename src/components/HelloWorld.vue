@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, onUnmounted, nextTick } from "vue";
+import {ref, watchEffect, onMounted, onUnmounted} from "vue";
 import Mock from "mockjs";
-import { throttle } from "lodash-es";
-import { showToast } from "vant";
+import {throttle} from "lodash-es";
+import {showToast} from "vant";
 
-const loading = ref(false);
-const list = ref([]);
-const page = ref(1);
-const noMore = ref(false);
-const scrollContainer = ref(null);
+interface ListItem {
+  id: string;
+  title: string;
+  content: { img?: string, video?: string };
+  label: string[];
+  user: { name: string, avatar: string };
+  like: number
+}
 
-watchEffect(() => {});
+const loading = ref<boolean>(false);
+const list = ref<ListItem[]>([]);
+const page = ref<number>(1);
+const noMore = ref<boolean>(false);
+const scrollContainer = ref<any>(null);
+
+watchEffect(() => {
+});
 
 onMounted(() => {
   setTimeout(() => {
@@ -24,20 +34,20 @@ onUnmounted(() => {
 });
 
 const getList = () => {
-  const params = getUrlParams();
-  const data = Mock.mock({
+  const params: Record<string, any> = getUrlParams();
+  const data: ListItem[] = Mock.mock({
     "list|10": [
       {
         id: "@id",
         title: "@title(2, 5)",
         content:
-          params.type !== "video"
-            ? () => ({
-                img: Mock.Random.image(),
-              })
-            : () => ({
-                video: Mock.Random.image(),
-              }),
+            params.type !== "video"
+                ? () => ({
+                  img: Mock.Random.image(),
+                })
+                : () => ({
+                  video: Mock.Random.image(),
+                }),
         "label|2": ["@word(1, 3)", "@word(2, 4)"],
         user: {
           name: "@cname",
@@ -71,7 +81,7 @@ const getUrlParams = () => {
 
 // 滚动事件节流（传统scroll事件方案）
 const handleScroll = throttle((e) => {
-  const { scrollTop, scrollHeight, clientHeight } = e.srcElement;
+  const {scrollTop, scrollHeight, clientHeight} = e.srcElement;
   if (scrollTop + clientHeight >= scrollHeight - 100) {
     getList();
   }
@@ -83,31 +93,31 @@ const handleScroll = throttle((e) => {
     <van-pull-refresh v-model="loading" @refresh="onRefresh">
       <div ref="scrollContainer" class="list-container">
         <div
-          v-for="(item, index) in list"
-          :key="item.id"
-          class="list-item"
-          :style="{
+            v-for="(item, index) in list"
+            :key="item.id"
+            class="list-item"
+            :style="{
             padding: index % 2 === 0 ? '0 0 20px 10px' : '20px 10px 0 0',
             height: index % 2 === 0 ? 'calc(30vh - 20px)' : 'calc(30vh - 20px)',
           }"
         >
           <div class="content">
-            <img v-if="item?.content?.img" :src="item.content.img" />
+            <img v-if="item?.content?.img" :src="item.content.img"/>
             <div v-if="item?.content?.video">
               <video
-                :id="`my-player-${item.id}`"
-                class="video-js"
-                controls
-                preload="auto"
-                :poster="item?.content?.video"
-                data-setup="{}"
+                  :id="`my-player-${item.id}`"
+                  class="video-js"
+                  controls
+                  preload="auto"
+                  :poster="item?.content?.video"
+                  data-setup="{}"
               >
-                <source src="//vjs.zencdn.net/v/oceans.mp4" type="video/mp4" />
+                <source src="//vjs.zencdn.net/v/oceans.mp4" type="video/mp4"/>
                 <source
-                  src="//vjs.zencdn.net/v/oceans.webm"
-                  type="video/webm"
+                    src="//vjs.zencdn.net/v/oceans.webm"
+                    type="video/webm"
                 />
-                <source src="//vjs.zencdn.net/v/oceans.ogv" type="video/ogg" />
+                <source src="//vjs.zencdn.net/v/oceans.ogv" type="video/ogg"/>
               </video>
             </div>
           </div>
@@ -119,11 +129,11 @@ const handleScroll = throttle((e) => {
           </div>
           <div class="bottom">
             <div class="user">
-              <img class="avatar" :src="item.user.avatar" />
+              <img class="avatar" :src="item.user.avatar"/>
               <div class="name">{{ item.user.name }}</div>
             </div>
             <div class="like">
-              <van-icon name="like-o" />
+              <van-icon name="like-o"/>
               <span class="count">{{ item.like }}</span>
             </div>
           </div>
