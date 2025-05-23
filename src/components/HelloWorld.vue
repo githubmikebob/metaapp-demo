@@ -13,10 +13,11 @@ interface ListItem {
   like: number
 }
 
-const loading = ref<boolean>(false);
-const list = ref<ListItem[]>([]);
 const page = ref<number>(1);
+const list = ref<ListItem[]>([]);
 const noMore = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const disabled = ref<boolean>(false);
 const scrollContainer = ref<any>(null);
 
 watchEffect(() => {
@@ -81,7 +82,11 @@ const getUrlParams = () => {
 
 // 滚动事件节流（传统scroll事件方案）
 const handleScroll = throttle((e) => {
+
   const {scrollTop, scrollHeight, clientHeight} = e.srcElement;
+  console.log(scrollTop)
+  disabled.value = scrollTop > 100
+  console.log(disabled.value)
   if (scrollTop + clientHeight >= scrollHeight - 100) {
     getList();
   }
@@ -90,15 +95,16 @@ const handleScroll = throttle((e) => {
 
 <template>
   <div class="demo">
-    <van-pull-refresh v-model="loading" @refresh="onRefresh">
+    <van-pull-refresh v-model="loading" :disabled="disabled" @refresh="onRefresh">
       <div ref="scrollContainer" class="list-container">
         <div
             v-for="(item, index) in list"
             :key="item.id"
             class="list-item"
             :style="{
-            padding: index % 2 === 0 ? '0 0 20px 10px' : '20px 10px 0 0',
-            height: index % 2 === 0 ? 'calc(30vh - 20px)' : 'calc(30vh - 20px)',
+            // padding: index % 2 === 0 ? '0 0 10px 10px' : '20px 10px 10px 0',
+            // height: index % 2 === 0 ? 'calc(30vh - 10px)' : 'calc(30vh - 30px)',
+            margin: index % 2 === 0 ? '0 0 10px 0' : '10px 0 0 0',
           }"
         >
           <div class="content">
@@ -177,9 +183,13 @@ const handleScroll = throttle((e) => {
 }
 
 .list-item {
+  color: #213547;
   width: calc(49% - 10px);
-  height: 30vh;
-  font-size: 0.8rem;
+  height: calc(30vh - 10px);
+  font-size: 0.9rem;
+  box-shadow: 2px 2px 4px #ccc;
+  background-color: #fff;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -197,6 +207,10 @@ const handleScroll = throttle((e) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.content img {
+  border-radius: 14px;
 }
 
 .title {
